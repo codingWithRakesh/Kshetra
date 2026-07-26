@@ -282,9 +282,9 @@ const SliceBuy = () => {
                     <tr key={i} className="hover:bg-[#F0C020]/5 transition-colors group">
                       <td className="p-6 border-r-4 border-black">
                         <div className="flex items-center gap-5">
-                          <div className="w-24 h-24 border-4 border-black shrink-0 overflow-hidden bg-gray-100 rotate-2 group-hover:rotate-0 transition-transform">
+                          {/* <div className="w-24 h-24 border-4 border-black shrink-0 overflow-hidden bg-gray-100 rotate-2 group-hover:rotate-0 transition-transform">
                             <img src={item.image} alt="land" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                          </div>
+                          </div> */}
                           <div>
                             <p className="font-black text-xs uppercase leading-none mb-2 wrap-break-word max-w-50">
                               {item.plotNoString}
