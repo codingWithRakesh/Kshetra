@@ -104,6 +104,41 @@ export default function SubmitBlockchain() {
     return BigInt(normalizedLat) * 1_000_000_000n + BigInt(normalizedLng);
   };
   const toWeiPrice = (price) => ethers.parseEther(String(price || "0"));
+  const calculateAreaSqFt = (pts) => {
+    if (pts.length < 3) return "";
+
+    const validPoints = pts.filter(
+      ([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng),
+    );
+    if (validPoints.length < 3) return "";
+
+    const earthRadiusMeters = 6378137;
+    const metersToSqFt = 10.76391041671;
+    const centerLat =
+      validPoints.reduce((sum, [lat]) => sum + lat, 0) / validPoints.length;
+    const centerLng =
+      validPoints.reduce((sum, [, lng]) => sum + lng, 0) / validPoints.length;
+    const centerLatRad = (centerLat * Math.PI) / 180;
+
+    const projectedPoints = validPoints.map(([lat, lng]) => {
+      const x =
+        (((lng - centerLng) * Math.PI) / 180) *
+        earthRadiusMeters *
+        Math.cos(centerLatRad);
+      const y = (((lat - centerLat) * Math.PI) / 180) * earthRadiusMeters;
+      return [x, y];
+    });
+
+    const areaSqMeters =
+      Math.abs(
+        projectedPoints.reduce((sum, [x1, y1], index) => {
+          const [x2, y2] = projectedPoints[(index + 1) % projectedPoints.length];
+          return sum + x1 * y2 - x2 * y1;
+        }, 0),
+      ) / 2;
+
+    return (areaSqMeters * metersToSqFt).toFixed(2);
+  };
 
   const updatePlotNoFromPoints = (pts) => {
     const pointsString = pts
@@ -112,7 +147,11 @@ export default function SubmitBlockchain() {
       )
       .join(" | ");
 
-    setFormData((prev) => ({ ...prev, plotNo: pointsString }));
+    setFormData((prev) => ({
+      ...prev,
+      plotNo: pointsString,
+      area: pts.length === 4 ? calculateAreaSqFt(pts) : "",
+    }));
   };
 
   // --- MAP HANDLERS ---
@@ -140,7 +179,7 @@ export default function SubmitBlockchain() {
 
   const handleClearMap = () => {
     setPoints([]);
-    setFormData((prev) => ({ ...prev, plotNo: "" }));
+    setFormData((prev) => ({ ...prev, plotNo: "", area: "" }));
   };
 
   // --- FORM HANDLERS ---
